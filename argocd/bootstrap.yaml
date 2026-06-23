@@ -6,9 +6,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/andresdelgadillo/adn-homelab-gitops.git'
-    targetRevision: HEAD
-    path: applications
+    repoURL: 'git@github.com:andresdelgadillo/adn-homelab-gitops.git'
+    targetRevision: main
+    path: argocd/applications
     directory:
       recurse: true
   destination:

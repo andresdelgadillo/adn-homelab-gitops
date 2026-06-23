@@ -8,7 +8,7 @@ server:
     enabled: true
     ingressClassName: "nginx"
     annotations:
-      cert-manager.io/cluster-issuer: "letsencrypt-staging-cloudflare"
+      cert-manager.io/cluster-issuer: "letsencrypt-prod-cloudflare"
       # Forces Nginx to route traffic to the pod over HTTP
       nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     

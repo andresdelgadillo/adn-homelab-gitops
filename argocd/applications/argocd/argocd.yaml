@@ -12,11 +12,11 @@ spec:
       targetRevision: 9.7.0
       helm:
         valueFiles:
-          - $values/applications/argocd/values.yaml # Reads from Source 2
+          - $values/argocd/applications/argocd/values.yaml # Reads from Source 2
           
     # Source 2: Your Private Configuration Repository
     - repoURL: 'https://github.com/andresdelgadillo/adn-homelab-gitops.git'
-      targetRevision: HEAD
+      targetRevision: main
       ref: values # Assigns a variable name to this repo root
   destination:
     server: 'https://kubernetes.default.svc'
