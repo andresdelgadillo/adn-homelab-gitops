@@ -1,0 +1,21 @@
+configs:
+  params:
+    # Tells ArgoCD to let Nginx handle the SSL termination
+    server.insecure: true
+
+server:
+  ingress:
+    enabled: true
+    ingressClassName: "nginx"
+    annotations:
+      cert-manager.io/cluster-issuer: "letsencrypt-staging-cloudflare"
+      # Forces Nginx to route traffic to the pod over HTTP
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    
+    # ArgoCD uses a direct 'hostname' string rather than a nested list
+    hostname: argocd.aldn.link
+    
+    extraTls:
+      - secretName: argocd-tls-secret
+        hosts:
+          - argocd.aldn.link
