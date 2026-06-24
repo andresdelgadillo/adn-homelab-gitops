@@ -1,0 +1,30 @@
+fullnameOverride: "victoriametrics"
+
+server:
+  scrape:
+    enabled: false 
+    
+  retentionPeriod: "30d"
+
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi" 
+
+  persistentVolume:
+    enabled: true
+    storageClassName: "local-path"
+    size: 15Gi 
+
+  extraArgs:
+    memory.allowedPercent: "60" 
+    search.maxConcurrentRequests: "4" 
+    search.maxUniqueTimeseries: "300000"
+
+alertmanager:
+  enabled: false
+vmalert:
+  enabled: false
