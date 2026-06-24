@@ -1,0 +1,59 @@
+alloy:
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "512Mi" 
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+
+  configMap:
+    create: true
+    content: |-
+      // 1. Scrape Orange Pi Hardware Metrics
+      prometheus.exporter.unix "host" {}
+      
+      prometheus.scrape "node_metrics" {
+        targets    = prometheus.exporter.unix.host.targets
+        forward_to = [prometheus.remote_write.victoriametrics.receiver]
+      }
+
+      // 2. Send metrics to VictoriaMetrics
+      prometheus.remote_write "victoriametrics" {
+        endpoint {
+          url = "http://victoriametrics-server.observability.svc.cluster.local:8428/api/v1/write"
+        }
+      }
+
+      // 3. Discover and scrape Kubernetes Pod Logs
+      discovery.kubernetes "pods" {
+        role = "pod"
+      }
+
+      discovery.relabel "pod_logs" {
+        targets = discovery.kubernetes.pods.targets
+        rule {
+          source_labels = ["__meta_kubernetes_namespace"]
+          target_label  = "namespace"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_pod_name"]
+          target_label  = "pod"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_pod_container_name"]
+          target_label  = "container"
+        }
+      }
+
+      loki.source.kubernetes "local_pods" {
+        targets    = discovery.relabel.pod_logs.output
+        forward_to = [loki.write.loki_backend.receiver]
+      }
+
+      // 4. Send logs to Loki
+      loki.write "loki_backend" {
+        endpoint {
+          url = "http://loki.observability.svc.cluster.local:3100/loki/api/v1/push"
+        }
+      }
