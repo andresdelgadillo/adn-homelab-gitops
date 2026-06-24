@@ -1,0 +1,81 @@
+# Force Loki to run as a single monolithic process
+deploymentMode: SingleBinary
+
+loki:
+  # Internal traffic only, so no auth needed
+  auth_enabled: false
+  
+  commonConfig:
+    replication_factor: 1
+    ring:
+      instance_addr: 127.0.0.1
+      kvstore:
+        store: inmemory
+  
+  readinessProbe:
+    initialDelaySeconds: 45
+
+  # Tell Loki to use the local volume instead of AWS S3 / MinIO
+  storage:
+    type: filesystem
+    
+  # Use the modern TSDB index (much lower memory footprint than older BoltDB)
+  schemaConfig:
+    configs:
+      - from: 2024-04-01
+        store: tsdb
+        object_store: filesystem
+        schema: v13
+        index:
+          prefix: index_
+          period: 24h
+
+singleBinary:
+  replicas: 1
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      # Logs are memory intensive. We give it 1GB to prevent OOM kills.
+      memory: "1Gi" 
+  persistence:
+    enabled: true
+    storageClass: "local-path"
+    size: 15Gi
+
+# Explicitly disable the microservice components so they don't spin up
+read:
+  replicas: 0
+write:
+  replicas: 0
+backend:
+  replicas: 0
+
+# Disable monitoring of Loki itself to save resources
+monitoring:
+  dashboards:
+    enabled: false
+  rules:
+    enabled: false
+  serviceMonitor:
+    enabled: false
+  selfMonitoring:
+    enabled: false
+    lokiCanary:
+      enabled: false
+test:
+  enabled: false
+
+gateway:
+  enabled: false
+
+chunksCache:
+  enabled: false
+
+resultsCache:
+  enabled: false
+
+lokiCanary:
+  enabled: false
