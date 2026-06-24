@@ -2,10 +2,10 @@ alloy:
   resources:
     limits:
       cpu: "500m"
-      memory: "512Mi" 
+      memory: "768Mi" 
     requests:
       cpu: "100m"
-      memory: "128Mi"
+      memory: "256Mi"
 
   configMap:
     create: true
@@ -15,7 +15,8 @@ alloy:
       
       prometheus.scrape "node_metrics" {
         targets    = prometheus.exporter.unix.host.targets
-        forward_to = [prometheus.remote_write.victoriametrics.receiver]
+        // forward_to = [prometheus.remote_write.victoriametrics.receiver]
+        forward_to = [prometheus.relabel.add_cluster_label.receiver]
       }
 
       // 2. Send metrics to VictoriaMetrics
@@ -57,3 +58,102 @@ alloy:
           url = "http://loki.observability.svc.cluster.local:3100/loki/api/v1/push"
         }
       }
+
+      // Added to enable Pods monitoring
+      // 5. Discover the RKE2 nodes in your Orange Pi cluster
+      discovery.kubernetes "rke2_nodes" {
+        role = "node"
+      }
+
+      // 6. Transform the targets to point safely to the API Server proxy path
+      discovery.relabel "rke2_cadvisor" {
+        targets = discovery.kubernetes.rke2_nodes.targets
+
+        // Route traffic to the internal secure API Service address
+        rule {
+          replacement  = "kubernetes.default.svc:443"
+          target_label = "__address__"
+        }
+
+        // Build the authenticated node proxy URL for cAdvisor
+        rule {
+          regex         = "(.+)"
+          source_labels = ["__meta_kubernetes_node_name"]
+          replacement   = "/api/v1/nodes/$1/proxy/metrics/cadvisor"
+          target_label  = "__metrics_path__"
+        }
+      }
+
+      // 7. Scrape cAdvisor using secure HTTPS and the built-in Pod ServiceAccount Token
+      prometheus.scrape "rke2_cadvisor_scraper" {
+        targets     = discovery.relabel.rke2_cadvisor.output
+        scheme      = "https"
+        
+        tls_config {
+          ca_file              = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+          insecure_skip_verify = false
+        }
+
+        // Use the pod's underlying identity token to pass RKE2's webhook auth firewall
+        bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+        
+        // Forward data straight into your VictoriaMetrics database
+        // forward_to        = [prometheus.remote_write.victoriametrics.receiver] 
+        forward_to        = [prometheus.relabel.add_cluster_label.receiver]
+      }
+
+      // Sections 8 and 9 requires kube-state-metrics service
+      // 8. Discover Kube State Metrics (KSM) Endpoints
+      discovery.kubernetes "ksm" {
+        role = "endpoints"
+      }
+
+      // Filter targets to grab only KSM's primary data port
+      discovery.relabel "ksm_targets" {
+        targets = discovery.kubernetes.ksm.targets
+        
+        // Keep only targets from your new kube-state-metrics service
+        rule {
+          source_labels = ["__meta_kubernetes_service_name"]
+          regex         = "kube-state-metrics"
+          action        = "keep"
+        }
+        
+        // Keep only the main core metrics port (named 'http-metrics' or 'http' by default)
+        rule {
+          source_labels = ["__meta_kubernetes_endpoint_port_name"]
+          // regex         = "http-metrics"
+          regex         = "http"
+          action        = "keep"
+        }
+      }
+
+      // 9. Scrape KSM and forward straight to VictoriaMetrics
+      prometheus.scrape "ksm_scraper" {
+        targets    = discovery.relabel.ksm_targets.output
+        //forward_to = [prometheus.remote_write.victoriametrics.receiver]
+        forward_to = [prometheus.relabel.add_cluster_label.receiver]
+      }
+
+      // 10. Global Metrics Pipeline (Inject the missing cluster label for dashboards)
+      prometheus.relabel "add_cluster_label" {
+        forward_to = [prometheus.remote_write.victoriametrics.receiver]
+        rule {
+          target_label = "cluster"
+          replacement  = "opi"
+        }
+      }
+
+rbac:
+  create: true
+  rules:
+    - apiGroups: [""]
+      resources:
+        - nodes
+        - nodes/proxy
+        - nodes/metrics
+        - nodes/spec
+        - pods
+        - services
+        - endpoints
+      verbs: ["get", "list", "watch"]
