@@ -8,9 +8,12 @@ helm repo update
 
 ## Base Helm Installation
 
+```bash
 helm install argocd argo/argo-cd --namespace argocd
+```
 
 ## Apply the Bootstrap Manifest
 
+```bash
 kubectl apply -f bootstrap.yaml
-
+```
