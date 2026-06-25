@@ -144,6 +144,16 @@ alloy:
         }
       }
 
+      // 11. Scrape Flint 3 Router Metrics (OpenWrt Lua Exporters)
+      prometheus.scrape "flint3_metrics" {
+        // Ensure this is the actual LAN IP of your router
+        targets = [
+          {"__address__" = "192.168.88.1:9100", "job" = "openwrt"},
+        ]
+        // Route it through the global label funnel so the dashboard can find it
+        forward_to = [prometheus.remote_write.victoriametrics.receiver]
+      }
+
 rbac:
   create: true
   rules:
