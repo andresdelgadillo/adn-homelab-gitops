@@ -7,6 +7,12 @@ alloy:
       cpu: "100m"
       memory: "256Mi"
 
+  extraPorts:
+    - name: syslog-udp
+      port: 1514
+      targetPort: 1514
+      protocol: UDP
+
   configMap:
     create: true
     content: |-
@@ -146,13 +152,45 @@ alloy:
 
       // 11. Scrape Flint 3 Router Metrics (OpenWrt Lua Exporters)
       prometheus.scrape "flint3_metrics" {
-        // Ensure this is the actual LAN IP of your router
         targets = [
           {"__address__" = "192.168.88.1:9100", "job" = "openwrt"},
         ]
-        // Route it through the global label funnel so the dashboard can find it
         forward_to = [prometheus.remote_write.victoriametrics.receiver]
       }
+
+      // 12. Loki relabel parser
+      loki.relabel "syslog_parser" {
+        forward_to = [loki.write.loki_backend.receiver]
+
+        rule {
+          source_labels = ["__syslog_message_hostname"]
+          target_label  = "host"
+        }
+        rule {
+          source_labels = ["__syslog_message_app_name"]
+          target_label  = "service"
+        }
+      }
+      // 13. Listen for external Syslogs (OpenWrt Router)
+      loki.source.syslog "router_syslog" {
+        listener {
+          address       = "0.0.0.0:1514"
+          protocol      = "udp"
+          syslog_format = "rfc3164"
+          labels        = { job = "syslog" }
+        }
+        // Forward the router logs to existing Loki connection
+        forward_to = [loki.relabel.syslog_parser.receiver]
+      }
+
+service:
+  type: LoadBalancer
+  # loadBalancerIP: 192.168.88.X
+  extraPorts:
+    - name: syslog-udp
+      port: 1514
+      targetPort: 1514
+      protocol: UDP
 
 rbac:
   create: true
@@ -164,6 +202,7 @@ rbac:
         - nodes/metrics
         - nodes/spec
         - pods
+        - pods/log
         - services
         - endpoints
       verbs: ["get", "list", "watch"]
