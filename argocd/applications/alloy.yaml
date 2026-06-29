@@ -19,7 +19,7 @@ spec:
 
     - repoURL: 'https://github.com/andresdelgadillo/adn-homelab-gitops.git'
       targetRevision: main
-      path: argocd/configurations/grafana
+      path: argocd/configurations/alloy
       directory:
         exclude: '{values.yaml,*.md}'
   destination:
