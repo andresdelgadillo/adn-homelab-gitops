@@ -16,6 +16,10 @@ spec:
     - repoURL: 'git@github.com:andresdelgadillo/adn-homelab-gitops.git'
       targetRevision: main
       ref: values
+
+    - repoURL: 'git@github.com:andresdelgadillo/adn-homelab-gitops.git'
+      targetRevision: main
+      path: argocd/applications/metallb/manifests
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: metallb-system 
