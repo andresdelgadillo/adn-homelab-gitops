@@ -11,7 +11,7 @@ spec:
       targetRevision: 0.16.1
       helm:
         valueFiles:
-          - $values/argocd/applications/metallb/values.yaml
+          - $values/argocd/configurations/metallb/values.yaml
           
     - repoURL: 'git@github.com:andresdelgadillo/adn-homelab-gitops.git'
       targetRevision: main
@@ -19,11 +19,13 @@ spec:
 
     - repoURL: 'git@github.com:andresdelgadillo/adn-homelab-gitops.git'
       targetRevision: main
-      path: argocd/applications/metallb/manifests
+      path: argocd/configurations/metallb
+      directory:
+        exclude: 'values.yaml'
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: metallb-system 
   syncPolicy:
     automated:
-      prune: true
+      prune: false
       selfHeal: true
