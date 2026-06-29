@@ -6,18 +6,17 @@ metadata:
 spec:
   project: default
   sources:
-    # Source 1: The Upstream Helm Chart
     - repoURL: 'https://argoproj.github.io/argo-helm'
       chart: argo-cd
       targetRevision: 9.7.0
       helm:
         valueFiles:
-          - $values/argocd/applications/argocd/values.yaml # Reads from Source 2
-          
-    # Source 2: Your Private Configuration Repository
+          - $values/argocd/configurations/argocd/values.yaml
+
     - repoURL: 'https://github.com/andresdelgadillo/adn-homelab-gitops.git'
       targetRevision: main
-      ref: values # Assigns a variable name to this repo root
+      ref: values
+
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: argocd

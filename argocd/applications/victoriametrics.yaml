@@ -11,11 +11,12 @@ spec:
       targetRevision: 0.41.0
       helm:
         valueFiles:
-          - $values/argocd/applications/victoriametrics/values.yaml
+          - $values/argocd/configurations/victoriametrics/values.yaml
           
     - repoURL: 'https://github.com/andresdelgadillo/adn-homelab-gitops.git'
       targetRevision: main
       ref: values
+      
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: observability 

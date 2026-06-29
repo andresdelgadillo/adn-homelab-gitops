@@ -21,7 +21,7 @@ spec:
       targetRevision: main
       path: argocd/configurations/metallb
       directory:
-        exclude: 'values.yaml'
+        exclude: '{values.yaml,*.md}'
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: metallb-system 
