@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-local-andres
+spec:
+  capacity:
+    # This is just a label, not a limit. Set it to a large value.
+    storage: 801Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce # Can be mounted by a single node at a time (which is true for local storage)
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/data0/andres
+  nodeAffinity: # <-- This tells Kubernetes this storage only exists on ONE specific node
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - opi # <-- Replace with your actual node name
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-local-media
+spec:
+  capacity:
+    storage: 801Gi # This is just a label, not a limit.
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/data2/media/videos/
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - opi

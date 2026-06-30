@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: samba
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: 'https://github.com/andresdelgadillo/adn-homelab-gitops.git'
+      targetRevision: main
+      path: argocd/configurations/samba
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: samba
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true

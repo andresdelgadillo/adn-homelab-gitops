@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: samba
+  namespace: samba
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: samba
+  template:
+    metadata:
+      labels:
+        app: samba
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+      - name: samba
+        image: ghcr.io/servercontainers/samba
+        ports:
+        - containerPort: 137
+          protocol: UDP
+        - containerPort: 138
+          protocol: UDP
+        - containerPort: 139
+          protocol: TCP
+        - containerPort: 445
+          protocol: UDP
+        - containerPort: 445
+          protocol: TCP
+        env:
+        - name: ACCOUNT_andres
+          valueFrom:
+            secretKeyRef:
+              name: samba-secrets
+              key: password_andres
+        - name: SAMBA_GLOBAL_STANZA
+          value: "netbios name = SAMBA"
+        - name: MODEL
+          value: "TimeCapsule"
+        - name: AVAHI_NAME
+          value: "StorageServer"
+        - name: SAMBA_CONF_LOG_LEVEL
+          value: "3"
+        - name: GROUP_family
+          value: "1500"
+        - name: UID_andres
+          value: "1000"
+        - name: GROUPS_andres
+          value: "family"
+        - name: SAMBA_VOLUME_CONFIG_andresonly
+          value: "[Andres]; path=/mnt/data0/andres; valid users = andres; guest ok = no; read only = no; browseable = yes; fruit:time machine = yes"
+        - name: SAMBA_VOLUME_CONFIG_public
+          value: "[Media]; path=/mnt/data0/media/videos; valid users = andres, root; guest ok = no; read only = no; browseable = yes; force group = family"
+        volumeMounts:
+        - mountPath: /mnt/data0/media/videos
+          name: volume-media
+        - mountPath: /mnt/data0/andres
+          name: volume-andres
+      volumes:
+      - name: volume-media
+        persistentVolumeClaim:
+          claimName: pvc-media  # Use the PVC
+      - name: volume-andres
+        persistentVolumeClaim:
+          claimName: pvc-andres  # Use the PVC
