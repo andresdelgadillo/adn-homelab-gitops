@@ -37,8 +37,8 @@ spec:
         - name: ACCOUNT_andres
           valueFrom:
             secretKeyRef:
-              name: samba-secrets
-              key: password_andres
+              name: samba-user-credentials
+              key: user-password
         - name: SAMBA_GLOBAL_STANZA
           value: "netbios name = SAMBA"
         - name: MODEL

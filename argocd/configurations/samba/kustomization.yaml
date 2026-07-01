@@ -7,3 +7,4 @@ resources:
   - persistent-volume.yaml
   - persistent-volume-claim.yaml
   - deployment.yaml
+  - samba-sealed-secret.yaml
