@@ -7,4 +7,3 @@ resources:
   - persistent-volume.yaml
   - persistent-volume-claim.yaml
   - deployment.yaml
-  - service.yaml

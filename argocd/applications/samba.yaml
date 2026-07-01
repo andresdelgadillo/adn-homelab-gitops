@@ -14,5 +14,5 @@ spec:
     namespace: samba
   syncPolicy:
     automated:
-      prune: false
+      prune: true
       selfHeal: true

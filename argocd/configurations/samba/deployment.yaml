@@ -13,6 +13,8 @@ spec:
       labels:
         app: samba
     spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       securityContext:
         fsGroup: 1000
       containers:
@@ -29,6 +31,8 @@ spec:
           protocol: UDP
         - containerPort: 445
           protocol: TCP
+        - containerPort: 5353
+          protocol: UDP
         env:
         - name: ACCOUNT_andres
           valueFrom:
@@ -52,9 +56,9 @@ spec:
         - name: SAMBA_VOLUME_CONFIG_andresonly
           value: "[Andres]; path=/mnt/data0/andres; valid users = andres; guest ok = no; read only = no; browseable = yes; fruit:time machine = yes"
         - name: SAMBA_VOLUME_CONFIG_public
-          value: "[Media]; path=/mnt/data0/media/videos; valid users = andres, root; guest ok = no; read only = no; browseable = yes; force group = family"
+          value: "[Media]; path=/mnt/data2/media/videos; valid users = andres, root; guest ok = no; read only = no; browseable = yes; force group = family"
         volumeMounts:
-        - mountPath: /mnt/data0/media/videos
+        - mountPath: /mnt/data2/media/videos
           name: volume-media
         - mountPath: /mnt/data0/andres
           name: volume-andres
