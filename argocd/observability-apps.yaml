@@ -6,13 +6,15 @@ metadata:
 spec:
   description: Project for monitoring and metrics
   
-
   sourceRepos:
     - '*'
     
   destinations:
     - server: 'https://kubernetes.default.svc'
       namespace: argocd
+
+    - server: 'https://kubernetes.default.svc'
+      namespace: '*'
       
   clusterResourceWhitelist:
     - group: '*'

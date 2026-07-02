@@ -4,14 +4,14 @@ metadata:
   name: metallb
   namespace: argocd
 spec:
-  project: default
+  project: infrastructure
   sources:
     - repoURL: 'https://metallb.github.io/metallb'
       chart: metallb
       targetRevision: 0.16.1
       helm:
         valueFiles:
-          - $values/argocd/configurations/metallb/values.yaml
+          - $values/argocd/configurations/infrastructure/metallb/values.yaml
           
     - repoURL: 'git@github.com:andresdelgadillo/adn-homelab-gitops.git'
       targetRevision: main
@@ -19,7 +19,7 @@ spec:
 
     - repoURL: 'git@github.com:andresdelgadillo/adn-homelab-gitops.git'
       targetRevision: main
-      path: argocd/configurations/metallb
+      path: argocd/configurations/infrastructure/metallb
       directory:
         exclude: '{values.yaml,*.md}'
   destination:

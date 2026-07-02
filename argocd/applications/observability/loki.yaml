@@ -4,14 +4,14 @@ metadata:
   name: loki
   namespace: argocd
 spec:
-  project: default
+  project: observability
   sources:
     - repoURL: 'https://grafana.github.io/helm-charts'
       chart: loki
       targetRevision: 7.0.0
       helm:
         valueFiles:
-          - $values/argocd/configurations/loki/values.yaml
+          - $values/argocd/configurations/observability/loki/values.yaml
           
     - repoURL: 'https://github.com/andresdelgadillo/adn-homelab-gitops.git'
       targetRevision: main

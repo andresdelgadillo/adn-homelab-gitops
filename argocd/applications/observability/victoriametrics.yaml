@@ -4,14 +4,14 @@ metadata:
   name: victoriametrics
   namespace: argocd
 spec:
-  project: default
+  project: observability
   sources:
     - repoURL: 'https://victoriametrics.github.io/helm-charts/'
       chart: victoria-metrics-single
       targetRevision: 0.41.0
       helm:
         valueFiles:
-          - $values/argocd/configurations/victoriametrics/values.yaml
+          - $values/argocd/configurations/observability/victoriametrics/values.yaml
           
     - repoURL: 'https://github.com/andresdelgadillo/adn-homelab-gitops.git'
       targetRevision: main
