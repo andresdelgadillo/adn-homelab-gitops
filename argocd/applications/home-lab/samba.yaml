@@ -4,11 +4,11 @@ metadata:
   name: samba
   namespace: argocd
 spec:
-  project: default
+  project: home-lab
   sources:
     - repoURL: 'https://github.com/andresdelgadillo/adn-homelab-gitops.git'
       targetRevision: main
-      path: argocd/configurations/samba
+      path: argocd/configurations/home-lab/samba
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: samba

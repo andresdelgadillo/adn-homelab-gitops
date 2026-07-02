@@ -1,17 +1,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: grafana
+  name: alloy
   namespace: argocd
 spec:
-  project: default
+  project: observability
   sources:
     - repoURL: 'https://grafana.github.io/helm-charts'
-      chart: grafana
-      targetRevision: 10.5.15
+      chart: alloy
+      targetRevision: 1.10.0
       helm:
         valueFiles:
-          - $values/argocd/configurations/grafana/values.yaml
+          - $values/argocd/configurations/observability/alloy/values.yaml
           
     - repoURL: 'https://github.com/andresdelgadillo/adn-homelab-gitops.git'
       targetRevision: main
@@ -19,7 +19,7 @@ spec:
 
     - repoURL: 'https://github.com/andresdelgadillo/adn-homelab-gitops.git'
       targetRevision: main
-      path: argocd/configurations/grafana
+      path: argocd/configurations/observability/alloy
       directory:
         exclude: '{values.yaml,*.md}'
   destination:
