@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: infrastructure
+  namespace: argocd
+spec:
+  description: Project for core cluster infrastructure
+  
+  sourceRepos:
+    - '*'
+    
+  destinations:
+    - server: 'https://kubernetes.default.svc'
+      namespace: argocd
+      
+    - server: 'https://kubernetes.default.svc'
+      namespace: '*'
+      
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: infrastructure-apps
+  namespace: argocd
+spec:
+  project: infrastructure
+  source:
+    repoURL: 'git@github.com:andresdelgadillo/adn-homelab-gitops.git'
+    targetRevision: main
+    path: argocd/applications/infrastructure
+    directory:
+      recurse: true
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
