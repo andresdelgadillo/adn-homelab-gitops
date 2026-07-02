@@ -17,10 +17,15 @@ spec:
       targetRevision: main
       ref: values
 
+    - repoURL: 'https://github.com/andresdelgadillo/adn-homelab-gitops.git'
+      targetRevision: main
+      path: argocd/configurations/infrastructure/cert-manager
+      directory:
+        exclude: '{values.yaml,*.md}'
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: cert-manager
   syncPolicy:
     automated:
-      prune: true
+      prune: false
       selfHeal: true

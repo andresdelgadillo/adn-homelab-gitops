@@ -1,0 +1,21 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging-cloudflare
+  namespace: cert-manager
+spec:
+  acme:
+    # Your email address for Let's Encrypt notifications
+    email: andresleonardodelgadillo@gmail.com
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-staging-account-key
+    solvers:
+      - dns01:
+          cloudflare:
+            # Your email associated with the Cloudflare account
+            email: andresleonardodelgadillo@gmail.com
+            apiTokenSecretRef:
+              # This references the Kubernetes Secret you created
+              name: cloudflare-api-token-secret
+              key: api-token
