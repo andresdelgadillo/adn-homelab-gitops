@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transmission
+  namespace: transmission 
+spec:
+  selector:
+    matchLabels:
+      app: transmission
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: transmission
+    spec:
+      containers:
+      - name: transmission
+        image: lscr.io/linuxserver/transmission:latest
+        env:
+          - name: PUID
+            value: "1000" # Ensure this matches your Orange Pi user ID
+          - name: PGID
+            value: "1000"
+          - name: UMASK
+            value: "002"
+          - name: TZ
+            value: "Etc/UTC"
+          - name: USER
+            value: "admin"
+          - name: PASS
+            value: "password"
+        ports:
+          - containerPort: 9091
+          - containerPort: 51413
+          - containerPort: 51413
+            protocol: UDP
+        volumeMounts:
+          - name: transmission-config
+            mountPath: /config
+          - name: downloads-volume
+            mountPath: /downloads
+          - name: videos-volume
+            mountPath: /videos
+          - name: watch-volume
+            mountPath: /watch
+      volumes:
+      - name: transmission-config
+        # persistentVolumeClaim:
+        #   claimName: transmission-config-pvc
+        hostPath:
+          path: /mnt/data0/andres/transmission/config
+          type: DirectoryOrCreate
+      - name: downloads-volume
+        hostPath:
+          path: /mnt/data0/andres/transmission/data
+          type: DirectoryOrCreate
+      - name: videos-volume
+        hostPath:
+          path: /mnt/data0/media/videos/
+          type: DirectoryOrCreate
+      - name: watch-volume
+        hostPath:
+          path: /mnt/data0/andres/transmission/watch
+          type: DirectoryOrCreate

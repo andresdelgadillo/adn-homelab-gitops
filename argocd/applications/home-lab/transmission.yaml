@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: transmission
+  namespace: argocd
+spec:
+  project: home-lab
+  sources:
+    - repoURL: 'https://github.com/andresdelgadillo/adn-homelab-gitops.git'
+      targetRevision: main
+      path: argocd/configurations/home-lab/transmission
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: transmission
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
