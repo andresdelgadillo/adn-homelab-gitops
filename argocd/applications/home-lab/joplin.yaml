@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: joplin
+  namespace: argocd
+spec:
+  project: home-lab
+  sources:
+    - repoURL: 'https://github.com/andresdelgadillo/adn-homelab-gitops.git'
+      targetRevision: main
+      path: argocd/configurations/home-lab/joplin
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: joplin
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

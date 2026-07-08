@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: joplin-ingress
+  namespace: joplin
+  labels:
+    name: joplin-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod-cloudflare"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts: 
+      - joplin.aldn.link
+      secretName: joplin-aldn-link-tls
+  rules:
+    - host: joplin.aldn.link
+      http:
+        paths:
+        - pathType: Prefix
+          path: "/"
+          backend:
+            service:
+              name: joplin-service
+              port: 
+                number: 22300

@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: joplin-server
+  namespace: joplin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: joplin
+  template:
+    metadata:
+      labels:
+        app: joplin
+    spec:
+      containers:
+        - name: joplin
+          image: joplin/server:3.7.1
+          ports:
+            - containerPort: 22300
+          env:
+            - name: APP_PORT
+              value: "22300"
+            - name: APP_BASE_URL
+              value: "https://joplin.aldn.link" 
+            - name: DB_CLIENT
+              value: "pg"
+            - name: POSTGRES_HOST
+              # Points to the CNPG Read-Write service
+              value: "joplin-db-rw.joplin.svc.cluster.local"
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_DATABASE
+              value: "joplin"
+            - name: POSTGRES_USER
+              value: "joplin"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  # Pulls the auto-generated password from CNPG
+                  name: joplin-db-app
+                  key: password
