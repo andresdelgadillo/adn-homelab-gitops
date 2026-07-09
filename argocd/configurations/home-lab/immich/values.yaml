@@ -1,0 +1,89 @@
+# 1. Global Environment (v0.10.0+ compliant structure)
+# This injects the database credentials into all Immich components
+controllers:
+  main:
+    containers:
+      main:
+        image:
+          repository: ghcr.io/immich-app/immich-server
+        env:
+          DB_HOSTNAME: "immich-db-rw.immich.svc.cluster.local"
+          DB_PORT: "5432"
+          DB_DATABASE_NAME: "immich"
+          DB_USERNAME:
+            valueFrom:
+              secretKeyRef:
+                name: immich-db-secret
+                key: username
+          DB_PASSWORD:
+            valueFrom:
+              secretKeyRef:
+                name: immich-db-secret
+                key: password
+
+# 2. Valkey
+valkey:
+  enabled: true
+
+# 3. Application & Storage Configuration
+immich:
+  configurationKind: ConfigMap
+  configuration:
+    image:
+      extractEmbedded: true
+    trash:
+      enabled: true
+      days: 30
+    storageTemplate:
+      enabled: true
+      template: "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
+      
+  persistence:
+    library:
+      # Binds to the PVC created in the storage manifest
+      existingClaim: "immich-library-pvc"
+
+# 4. Web Server & Ingress (Cloudflare + Custom Domain)
+server:
+  ingress:
+    main:
+      enabled: true
+      ingressClassName: "nginx"
+      annotations:
+        # Your updated Cloudflare ClusterIssuer
+        cert-manager.io/cluster-issuer: "letsencrypt-prod-cloudflare"
+        nginx.ingress.kubernetes.io/proxy-body-size: "0"   
+      hosts:
+        # Your updated domain
+        - host: immich.aldn.link
+          paths:
+            - path: "/"
+              pathType: Prefix
+      tls:
+        - secretName: immich-tls-secret
+          hosts:
+            # Your updated domain
+            - immich.aldn.link
+
+# 5. Machine Learning (Rockchip RK3588 NPU Configuration)
+machine-learning:
+  enabled: true
+  controllers:
+    main:
+      containers:
+        main:
+          image:
+            repository: ghcr.io/immich-app/immich-machine-learning
+            tag: v2.6.3-rknn
+            pullPolicy: IfNotPresent
+          env:
+            MACHINE_LEARNING_RKNN_THREADS: "3"
+          securityContext:
+            privileged: true
+  persistence:
+    rknpu:
+      enabled: true
+      type: hostPath
+      hostPath: /dev/rknpu
+      globalMounts:
+        - path: /dev/rknpu

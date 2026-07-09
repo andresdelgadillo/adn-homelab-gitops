@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: immich
+  namespace: argocd
+spec:
+  project: home-lab
+  sources:
+    # 1. The Immich Helm Chart (Using the official OCI registry)
+    - repoURL: 'ghcr.io/immich-app/immich-charts'
+      chart: immich
+      targetRevision: 0.11.1
+      helm:
+        valueFiles:
+          - $values/argocd/configurations/home-lab/immich/values.yaml
+          
+    # 2. Reference to your Git repo for the values file
+    - repoURL: 'https://github.com/andresdelgadillo/adn-homelab-gitops.git'
+      targetRevision: main
+      ref: values
+
+    # 3. Reference to your Git repo for raw manifests (DB, Storage, Secrets)
+    - repoURL: 'https://github.com/andresdelgadillo/adn-homelab-gitops.git'
+      targetRevision: main
+      path: argocd/configurations/home-lab/immich
+      directory:
+        exclude: '{values.yaml,*.md}'
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: immich
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+    automated:
+      prune: false
+      selfHeal: false

@@ -1,0 +1,29 @@
+# 1. Create the physical volume mapping to your NVMe
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: immich-library-pv
+spec:
+  capacity:
+    storage: 20Gi # Set this to your NVMe capacity
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain # CRITICAL: Ensures data is never deleted by K8s
+  storageClassName: local-path
+  hostPath:
+    path: /mnt/data0/immich-library
+---
+# 2. Create the claim that Immich will actually use
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: immich-library-pvc
+  namespace: immich
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi # Must match the PV
+  storageClassName: local-path
+  volumeName: immich-library-pv
