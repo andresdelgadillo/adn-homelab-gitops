@@ -2,6 +2,11 @@
 # This injects the database credentials into all Immich components
 controllers:
   main:
+    pod:
+      annotations:                          # These annotatons are needed due to the lack of Prometheus Operator
+        prometheus.io/scrape: "true"        # This tells Prometheus to scrape the pod
+        prometheus.io/port: "8081"          # This tells Prometheus which port to scrape
+        prometheus.io/path: "/metrics"      # This tells Prometheus which path to scrape
     containers:
       main:
         image:
@@ -20,6 +25,8 @@ controllers:
               secretKeyRef:
                 name: immich-db-secret
                 key: password
+          IMMICH_LOG_FORMAT: "json"
+          IMMICH_TELEMETRY_INCLUDE: "all"
 
 # 2. Valkey
 valkey:
@@ -76,6 +83,13 @@ machine-learning:
             repository: ghcr.io/immich-app/immich-machine-learning
             tag: v2.6.3-rknn
             pullPolicy: IfNotPresent
+          probes:
+            startup:
+              spec:
+                # Check every 10 seconds, up to 60 times (gives it 10 full minutes to load models if needed)
+                failureThreshold: 60
+                periodSeconds: 10
+                timeoutSeconds: 5
           env:
             MACHINE_LEARNING_RKNN_THREADS: "3"
           securityContext:
@@ -87,3 +101,8 @@ machine-learning:
       hostPath: /dev/rknpu
       globalMounts:
         - path: /dev/rknpu
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
