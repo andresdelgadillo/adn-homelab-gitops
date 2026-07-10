@@ -55,7 +55,7 @@ server:
   ingress:
     main:
       enabled: true
-      ingressClassName: "nginx"
+      className: "nginx"
       annotations:
         # Your updated Cloudflare ClusterIssuer
         cert-manager.io/cluster-issuer: "letsencrypt-prod-cloudflare"
@@ -81,7 +81,7 @@ machine-learning:
         main:
           image:
             repository: ghcr.io/immich-app/immich-machine-learning
-            tag: v2.6.3-rknn
+            tag: v3.0.0-rknn
             pullPolicy: IfNotPresent
           probes:
             startup:

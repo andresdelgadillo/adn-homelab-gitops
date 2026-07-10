@@ -9,7 +9,7 @@ spec:
     # 1. The Immich Helm Chart (Using the official OCI registry)
     - repoURL: 'ghcr.io/immich-app/immich-charts'
       chart: immich
-      targetRevision: 0.11.1
+      targetRevision: 0.13.1
       helm:
         valueFiles:
           - $values/argocd/configurations/home-lab/immich/values.yaml
